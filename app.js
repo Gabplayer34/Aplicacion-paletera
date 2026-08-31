@@ -153,8 +153,9 @@ function renderBalance() {
   let total = currentOthers;
   DENOMINATIONS.forEach((d) => {
     const count = currentBills[d] || 0;
-    $(`count-${d}`).textContent = count;
-    total += count * d;
+    const amount = count * d;
+    $(`count-${d}`).textContent = eur(amount);
+    total += amount;
   });
   $("totalAmount").textContent = eur(total);
   const othersRow = $("othersRow");
