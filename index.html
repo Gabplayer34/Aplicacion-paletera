@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Presupuesto Palets</title>
+<meta name="theme-color" content="#1f6f43" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div id="setupScreen" class="screen">
+  <div class="card setup-card">
+    <h1>💶 Presupuesto Palets</h1>
+    <p class="muted">Configura la sincronización una vez en cada móvil (el tuyo y el de tu padre) usando los mismos datos para compartir el mismo saldo.</p>
+
+    <label>Tu nombre (para el historial)</label>
+    <input id="userName" type="text" placeholder="Ej: Gabriel" maxlength="30" />
+
+    <label>Código de sala compartido</label>
+    <input id="roomId" type="text" placeholder="Ej: palets-familia-2026" maxlength="60" />
+    <p class="hint">Escribe el mismo código en los dos móviles. Puedes inventarlo tú mismo.</p>
+
+    <details class="firebase-config">
+      <summary>Configuración de Firebase (solo la primera vez)</summary>
+      <p class="hint">Pega aquí la configuración de tu proyecto Firebase. Consulta el README para crear uno gratis en 5 minutos.</p>
+      <textarea id="firebaseConfig" rows="8" placeholder='{
+  "apiKey": "...",
+  "authDomain": "...",
+  "projectId": "...",
+  "storageBucket": "...",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+    </details>
+
+    <button id="startBtn" class="btn primary">Empezar</button>
+    <p id="setupError" class="error"></p>
+  </div>
+</div>
+
+<div id="appScreen" class="screen hidden">
+  <header class="topbar">
+    <div>
+      <h1>💶 Palets</h1>
+      <span id="syncStatus" class="sync-status">Conectando…</span>
+    </div>
+    <button id="settingsBtn" class="icon-btn" title="Ajustes">⚙️</button>
+  </header>
+
+  <main>
+    <section class="card balance-card">
+      <span class="label">Dinero disponible</span>
+      <div id="totalAmount" class="total-amount">0,00 €</div>
+
+      <div class="bills-grid">
+        <div class="bill-chip" data-den="50">
+          <span class="bill-value">50€</span>
+          <span id="count-50" class="bill-count">0</span>
+        </div>
+        <div class="bill-chip" data-den="20">
+          <span class="bill-value">20€</span>
+          <span id="count-20" class="bill-count">0</span>
+        </div>
+        <div class="bill-chip" data-den="10">
+          <span class="bill-value">10€</span>
+          <span id="count-10" class="bill-count">0</span>
+        </div>
+        <div class="bill-chip" data-den="5">
+          <span class="bill-value">5€</span>
+          <span id="count-5" class="bill-count">0</span>
+        </div>
+      </div>
+      <div id="othersRow" class="others-row hidden">
+        Sueltos/otros: <span id="othersAmount">0,00 €</span>
+      </div>
+    </section>
+
+    <section class="actions-row">
+      <button id="depositBtn" class="btn action-btn deposit">
+        <span class="action-icon">➕</span> Ingresar dinero
+      </button>
+      <button id="withdrawBtn" class="btn action-btn withdraw">
+        <span class="action-icon">➖</span> Retirar dinero
+      </button>
+    </section>
+
+    <section class="card history-card">
+      <h2>Historial de movimientos</h2>
+      <div id="historyList" class="history-list">
+        <p class="muted">Sin movimientos todavía.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="movementModal" class="modal hidden">
+  <div class="modal-content">
+    <h2 id="modalTitle">Ingresar dinero</h2>
+    <p class="hint">Indica cuántos billetes de cada tipo.</p>
+
+    <div class="modal-bills">
+      <div class="modal-bill-row">
+        <label>Billetes de 50€</label>
+        <input type="number" id="in-50" min="0" step="1" value="0" inputmode="numeric" />
+      </div>
+      <div class="modal-bill-row">
+        <label>Billetes de 20€</label>
+        <input type="number" id="in-20" min="0" step="1" value="0" inputmode="numeric" />
+      </div>
+      <div class="modal-bill-row">
+        <label>Billetes de 10€</label>
+        <input type="number" id="in-10" min="0" step="1" value="0" inputmode="numeric" />
+      </div>
+      <div class="modal-bill-row">
+        <label>Billetes de 5€</label>
+        <input type="number" id="in-5" min="0" step="1" value="0" inputmode="numeric" />
+      </div>
+      <div class="modal-bill-row">
+        <label>Otros / sueltos (€)</label>
+        <input type="number" id="in-others" min="0" step="0.01" value="0" inputmode="decimal" />
+      </div>
+    </div>
+
+    <label>Nota (opcional)</label>
+    <input id="in-note" type="text" placeholder="Ej: Compra de palets en..." maxlength="80" />
+
+    <div class="modal-total">Total del movimiento: <span id="modalTotal">0,00 €</span></div>
+    <p id="modalError" class="error"></p>
+
+    <div class="modal-actions">
+      <button id="cancelMovement" class="btn secondary">Cancelar</button>
+      <button id="confirmMovement" class="btn primary">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Ajustes</h2>
+    <label>Tu nombre</label>
+    <input id="settingsName" type="text" maxlength="30" />
+    <label>Código de sala</label>
+    <input id="settingsRoom" type="text" disabled />
+    <p class="hint">Para cambiar de sala o desconectar este móvil, usa "Olvidar configuración".</p>
+    <div class="modal-actions">
+      <button id="forgetSetup" class="btn danger">Olvidar configuración</button>
+      <button id="closeSettings" class="btn secondary">Cerrar</button>
+    </div>
+    <div class="modal-actions">
+      <button id="saveSettings" class="btn primary">Guardar nombre</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

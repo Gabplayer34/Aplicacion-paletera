@@ -1,0 +1,273 @@
+:root {
+  --green: #1f6f43;
+  --green-light: #2f9e5e;
+  --red: #b3412c;
+  --red-light: #d9583d;
+  --bg: #f4f6f4;
+  --card-bg: #ffffff;
+  --text: #1c2a22;
+  --muted: #6b7a70;
+  --border: #e1e6e2;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hidden { display: none !important; }
+
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border: 1px solid var(--border);
+}
+
+/* Setup screen */
+#setupScreen {
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.setup-card {
+  width: 100%;
+  max-width: 420px;
+}
+.setup-card h1 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+}
+.muted { color: var(--muted); font-size: 0.9rem; }
+.hint { color: var(--muted); font-size: 0.8rem; margin: 4px 0 12px; }
+
+label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 14px 0 6px;
+}
+
+input[type="text"], input[type="number"], textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 1rem;
+  background: #fafcfa;
+  color: var(--text);
+}
+
+textarea { font-family: monospace; font-size: 0.8rem; resize: vertical; }
+
+.firebase-config { margin-top: 16px; }
+.firebase-config summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--green);
+}
+
+.btn {
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 18px;
+}
+.btn.primary { background: var(--green); color: white; }
+.btn.secondary { background: #edf1ee; color: var(--text); }
+.btn.danger { background: var(--red); color: white; }
+.btn:active { transform: scale(0.98); }
+
+.error {
+  color: var(--red);
+  font-size: 0.85rem;
+  min-height: 1.2em;
+  margin-top: 8px;
+}
+
+/* App screen */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 16px 8px;
+}
+.topbar h1 { margin: 0; font-size: 1.3rem; }
+.sync-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.icon-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 8px;
+}
+
+main {
+  padding: 8px 16px 32px;
+  max-width: 560px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.balance-card {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.balance-card .label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+.total-amount {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--green);
+  margin: 6px 0 18px;
+}
+
+.bills-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.bill-chip {
+  background: #f1f7f2;
+  border-radius: 12px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.bill-value { font-size: 0.8rem; color: var(--muted); font-weight: 700; }
+.bill-count { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+
+.others-row {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.action-btn {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+.action-btn.deposit { background: var(--green); color: white; }
+.action-btn.withdraw { background: var(--red); color: white; }
+.action-icon { font-size: 1.1rem; }
+
+.history-card h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  font-size: 0.85rem;
+}
+.history-item:last-child { border-bottom: none; }
+.history-left { display: flex; flex-direction: column; gap: 2px; }
+.history-amount { font-weight: 700; }
+.history-amount.positive { color: var(--green); }
+.history-amount.negative { color: var(--red); }
+.history-meta { color: var(--muted); font-size: 0.75rem; }
+.history-note { color: var(--text); font-size: 0.8rem; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+}
+.modal-content {
+  background: var(--card-bg);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-content h2 { margin: 0 0 4px; }
+
+.modal-bills { margin-top: 10px; }
+.modal-bill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0;
+}
+.modal-bill-row label {
+  margin: 0;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+.modal-bill-row input {
+  width: 110px;
+  text-align: right;
+}
+
+.modal-total {
+  margin-top: 16px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+.modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.modal-actions .btn { margin-top: 16px; }
+
+@media (max-width: 380px) {
+  .total-amount { font-size: 2.1rem; }
+}
