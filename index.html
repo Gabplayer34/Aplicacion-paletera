@@ -104,26 +104,27 @@
 
     <div class="modal-bills">
       <div class="modal-bill-row">
-        <label>Billetes de 50€</label>
-        <input type="number" id="in-50" min="0" step="1" value="0" inputmode="numeric" />
+        <label>Dinero en billetes de 50€</label>
+        <input type="number" id="in-50" min="0" step="50" value="0" inputmode="numeric" />
       </div>
       <div class="modal-bill-row">
-        <label>Billetes de 20€</label>
-        <input type="number" id="in-20" min="0" step="1" value="0" inputmode="numeric" />
+        <label>Dinero en billetes de 20€</label>
+        <input type="number" id="in-20" min="0" step="20" value="0" inputmode="numeric" />
       </div>
       <div class="modal-bill-row">
-        <label>Billetes de 10€</label>
-        <input type="number" id="in-10" min="0" step="1" value="0" inputmode="numeric" />
+        <label>Dinero en billetes de 10€</label>
+        <input type="number" id="in-10" min="0" step="10" value="0" inputmode="numeric" />
       </div>
       <div class="modal-bill-row">
-        <label>Billetes de 5€</label>
-        <input type="number" id="in-5" min="0" step="1" value="0" inputmode="numeric" />
+        <label>Dinero en billetes de 5€</label>
+        <input type="number" id="in-5" min="0" step="5" value="0" inputmode="numeric" />
       </div>
       <div class="modal-bill-row">
         <label>Otros / sueltos (€)</label>
         <input type="number" id="in-others" min="0" step="0.01" value="0" inputmode="decimal" />
       </div>
     </div>
+    <p class="hint">Escribe la cantidad de dinero en cada tipo de billete (por ejemplo, 100 en "billetes de 50€" son 2 billetes).</p>
 
     <label>Nota (opcional)</label>
     <input id="in-note" type="text" placeholder="Ej: Compra de palets en..." maxlength="80" />

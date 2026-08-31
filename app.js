@@ -217,7 +217,8 @@ function closeModal() {
 function readModalInputs() {
   const bills = {};
   DENOMINATIONS.forEach((d) => {
-    bills[d] = Math.max(0, Math.floor(Number($(`in-${d}`).value) || 0));
+    const amount = Math.max(0, Number($(`in-${d}`).value) || 0);
+    bills[d] = Math.round(amount / d);
   });
   const others = Math.max(0, Number($("in-others").value) || 0);
   return { bills, others };
