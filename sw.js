@@ -1,4 +1,4 @@
-const CACHE_NAME = "palets-cache-v1";
+const CACHE_NAME = "palets-cache-v2";
 const ASSETS = [
   "./index.html",
   "./styles.css",
@@ -33,19 +33,19 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (event.request.method !== "GET") return;
+  if (url.origin !== self.location.origin) return;
 
+  // Network-first: always use the latest deployed files when online,
+  // only fall back to the cached copy when there's no connection.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const networkFetch = fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200 && url.origin === self.location.origin) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || networkFetch;
-    })
+    fetch(event.request)
+      .then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
