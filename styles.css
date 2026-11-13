@@ -3,6 +3,8 @@
   --green-light: #2f9e5e;
   --red: #b3412c;
   --red-light: #d9583d;
+  --amber: #a9690f;
+  --amber-light: #c98620;
   --bg: #f4f6f4;
   --card-bg: #ffffff;
   --text: #1c2a22;
@@ -190,21 +192,8 @@ main {
 }
 .action-btn.deposit { background: var(--green); color: white; }
 .action-btn.withdraw { background: var(--red); color: white; }
+.action-btn.correct { background: var(--amber); color: white; margin-bottom: 16px; }
 .action-icon { font-size: 1.1rem; }
-
-.link-btn {
-  display: block;
-  width: 100%;
-  background: none;
-  border: none;
-  color: var(--muted);
-  font-size: 0.85rem;
-  text-align: center;
-  padding: 6px;
-  margin-bottom: 16px;
-  cursor: pointer;
-  text-decoration: underline;
-}
 
 .history-card h2 {
   margin: 0 0 12px;
