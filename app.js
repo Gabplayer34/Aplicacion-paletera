@@ -117,8 +117,15 @@ function listenToMovements() {
       const m = docSnap.data();
       const item = document.createElement("div");
       item.className = "history-item";
-      const sign = m.type === "withdraw" ? "-" : "+";
-      const cls = m.type === "withdraw" ? "negative" : "positive";
+      let sign = "+";
+      let cls = "positive";
+      if (m.type === "withdraw") {
+        sign = "-";
+        cls = "negative";
+      } else if (m.type === "adjustment") {
+        sign = m.amount < 0 ? "-" : m.amount > 0 ? "+" : "";
+        cls = m.amount < 0 ? "negative" : m.amount > 0 ? "positive" : "";
+      }
       const date = m.createdAt?.toDate ? m.createdAt.toDate() : new Date();
       const dateStr = date.toLocaleString("es-ES", {
         day: "2-digit",
@@ -131,12 +138,18 @@ function listenToMovements() {
         .join(", ");
       const othersSummary = m.others ? `${eur(m.others)} sueltos` : "";
       const summary = [billsSummary, othersSummary].filter(Boolean).join(" · ");
+      const adjustmentMeta =
+        m.type === "adjustment"
+          ? ` · antes: ${eur(m.previousTotal)} → ahora: ${eur(m.newTotal)}`
+          : "";
+      const defaultLabel =
+        m.type === "withdraw" ? "Retirada" : m.type === "adjustment" ? "Corrección de saldo" : "Ingreso";
       item.innerHTML = `
         <div class="history-left">
-          <span class="history-note">${m.note ? escapeHtml(m.note) : (m.type === "withdraw" ? "Retirada" : "Ingreso")}</span>
-          <span class="history-meta">${escapeHtml(m.author || "—")} · ${dateStr}${summary ? " · " + escapeHtml(summary) : ""}</span>
+          <span class="history-note">${m.note ? escapeHtml(m.note) : defaultLabel}</span>
+          <span class="history-meta">${escapeHtml(m.author || "—")} · ${dateStr}${summary ? " · " + escapeHtml(summary) : ""}${adjustmentMeta}</span>
         </div>
-        <div class="history-amount ${cls}">${sign}${eur(m.amount)}</div>
+        <div class="history-amount ${cls}">${sign}${eur(Math.abs(m.amount))}</div>
       `;
       list.appendChild(item);
     });
@@ -214,22 +227,29 @@ function closeModal() {
   pendingMode = null;
 }
 
-function readModalInputs() {
+function readAmountInputs(prefix) {
   const bills = {};
   DENOMINATIONS.forEach((d) => {
-    const amount = Math.max(0, Number($(`in-${d}`).value) || 0);
+    const amount = Math.max(0, Number($(`${prefix}-${d}`).value) || 0);
     bills[d] = Math.round(amount / d);
   });
-  const others = Math.max(0, Number($("in-others").value) || 0);
+  const others = Math.max(0, Number($(`${prefix}-others`).value) || 0);
   return { bills, others };
+}
+
+function totalOf(bills, others) {
+  let total = others;
+  DENOMINATIONS.forEach((d) => (total += bills[d] * d));
+  return total;
+}
+
+function readModalInputs() {
+  return readAmountInputs("in");
 }
 
 function updateModalTotal() {
   const { bills, others } = readModalInputs();
-  let total = others;
-  DENOMINATIONS.forEach((d) => (total += bills[d] * d));
-  $("modalTotal").textContent = eur(total);
-  return total;
+  $("modalTotal").textContent = eur(totalOf(bills, others));
 }
 
 [...DENOMINATIONS, "others"].forEach((d) => {
@@ -296,6 +316,68 @@ $("confirmMovement").addEventListener("click", async () => {
     $("modalError").textContent = err.message || "No se pudo completar el movimiento.";
   } finally {
     $("confirmMovement").disabled = false;
+  }
+});
+
+// ---- Correct balance modal ----
+function openCorrectModal() {
+  DENOMINATIONS.forEach((d) => ($(`co-${d}`).value = (currentBills[d] || 0) * d));
+  $("co-others").value = currentOthers;
+  $("co-note").value = "";
+  $("correctError").textContent = "";
+  updateCorrectTotal();
+  $("correctModal").classList.remove("hidden");
+}
+
+function closeCorrectModal() {
+  $("correctModal").classList.add("hidden");
+}
+
+function updateCorrectTotal() {
+  const { bills, others } = readAmountInputs("co");
+  $("correctTotal").textContent = eur(totalOf(bills, others));
+}
+
+[...DENOMINATIONS, "others"].forEach((d) => {
+  $(`co-${d}`).addEventListener("input", updateCorrectTotal);
+});
+
+$("correctBtn").addEventListener("click", openCorrectModal);
+$("cancelCorrect").addEventListener("click", closeCorrectModal);
+
+$("confirmCorrect").addEventListener("click", async () => {
+  const { bills: newBills, others: newOthers } = readAmountInputs("co");
+  const newTotal = totalOf(newBills, newOthers);
+  const note = $("co-note").value.trim();
+  const author = localStorage.getItem(LS_NAME) || "Alguien";
+  $("confirmCorrect").disabled = true;
+
+  try {
+    let previousTotal = 0;
+    await fb.runTransaction(db, async (tx) => {
+      const snap = await tx.get(roomRef);
+      const data = snap.exists() ? snap.data() : { bills: { 50: 0, 20: 0, 10: 0, 5: 0 }, others: 0 };
+      previousTotal = totalOf({ ...data.bills }, data.others || 0);
+      tx.set(roomRef, { bills: newBills, others: newOthers, updatedAt: fb.serverTimestamp() }, { merge: true });
+    });
+
+    await fb.addDoc(movementsRef, {
+      type: "adjustment",
+      amount: newTotal - previousTotal,
+      bills: newBills,
+      others: newOthers,
+      previousTotal,
+      newTotal,
+      note,
+      author,
+      createdAt: fb.serverTimestamp(),
+    });
+
+    closeCorrectModal();
+  } catch (err) {
+    $("correctError").textContent = err.message || "No se pudo corregir el saldo.";
+  } finally {
+    $("confirmCorrect").disabled = false;
   }
 });
 
