@@ -402,10 +402,21 @@ $("forgetSetup").addEventListener("click", () => {
   }
 });
 
-// ---- PWA service worker ----
+// ---- Remove any previously installed service worker ----
+// This app needs internet anyway to sync, so offline caching isn't useful
+// here and was causing phones to keep showing an outdated version.
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    if (regs.length === 0) return;
+    Promise.all(regs.map((r) => r.unregister())).then(() => {
+      if ("caches" in window) {
+        caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))));
+      }
+      if (!sessionStorage.getItem("palets_sw_cleanup_reloaded")) {
+        sessionStorage.setItem("palets_sw_cleanup_reloaded", "1");
+        location.reload();
+      }
+    });
   });
 }
 
